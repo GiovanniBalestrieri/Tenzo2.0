@@ -8,6 +8,14 @@ ADXL345 acc;
 ITG3200 gyro;
 
 float vals[6];
+int rawAccel[3];
+
+
+float offsetAcc[3] = {0.4666,-0.1594, -0.7343};
+int xMax,xMin,yMax,yMin,zMax,zMin;
+int offsetX,offsetY,offsetZ;
+
+float gains[3] = {0.00376390,0.00376009,0.00349265};
 
 void setup() {
   Serial.begin(115200);  
@@ -36,7 +44,7 @@ void loop() {
   delay(500);
 }
 
-void serialRoutine()
+void accRoutine()
 {
   Serial.print("\nAcc:\t");
   Serial.print(vals[0]);
@@ -66,8 +74,91 @@ void getValues(float * values) {
   //magn.getValues(&values[6]);
 }
 
+void serialRoutine()
+{
+  if (Serial.available()>0)
+  {
+    char t = Serial.read();
+    
+    if (t=='X')
+    {
+      Serial.println("XMAX");
+      acc.readAccel(rawAccel);
+      xMax = rawAccel[0];
+      Serial.print("\nRAW:\t");
+      Serial.println(rawAccel[0]);
+    }
+    if (t=='x')
+    {
+      Serial.println("Xmin");
+      acc.readAccel(rawAccel);
+      xMin = rawAccel[0];
+      Serial.print("\nRAW:\t");
+      Serial.println(rawAccel[0]);
+    }
+    if (t=='Y')
+    {
+      Serial.println("YMAX");
+      acc.readAccel(rawAccel);
+      yMax = rawAccel[1];
+      Serial.print("\nRAW:\t");
+      Serial.println(rawAccel[1]);
+    }
+    if (t=='y')
+    {
+      Serial.println("Ymin");
+      acc.readAccel(rawAccel);
+      yMin = rawAccel[1];
+      Serial.print("\nRAW:\t");
+      Serial.println(rawAccel[1]);
+    }
+    if (t=='Z')
+    {
+      Serial.println("ZMAX");
+      acc.readAccel(rawAccel);
+      zMax = rawAccel[2];
+      Serial.print("\nRAW:\t");
+      Serial.println(rawAccel[2]);
+    }
+    if (t=='x')
+    {
+      Serial.println("Zmin");
+      acc.readAccel(rawAccel);
+      zMin = rawAccel[2];
+      Serial.print("\nRAW:\t");
+      Serial.println(rawAccel[2]);
+    }
+    if (t == 'c')
+    {
+      offsetX = (xMax-xMin)/2;
+      offsetY = (yMax-yMin)/2;
+      offsetZ = (zMax-zMin)/2;
+      
+      offsetAcc[0] = offsetX;
+      offsetAcc[1] = offsetY;
+      offsetAcc[2] = offsetZ;
+    }
+  }
+}
 
-void getAccel(float * values) {  
+void getAccel(float * values) 
+{
   acc.get_Gxyz(values);
+  accRoutine();  
+  acc.readAccel(rawAccel);
+  
+  Serial.print("\nRAW:\t");
+  Serial.print(rawAccel[0]);
+  Serial.print("\t");
+  Serial.print(rawAccel[1]);
+  Serial.print("\t");
+  Serial.println(rawAccel[2]);
+  int i;
+  for (i=0;i<3;i++)
+  {
+    values[i] = (rawAccel[i]- offsetAcc[i])*gains[i] ;
+  }
+  Serial.println("Adjusted");
+  accRoutine();
   //magn.getValues(&values[6]);
 }
