@@ -290,7 +290,6 @@ float q[4]; // quaternion
   angles[2] = atan2(2 * q[2] * q[3] - 2 * q[0] * q[1], 2 * q[0] * q[0] + 2 * q[3] * q[3] - 1) * 180/M_PI; // phi
 }
 
-
 void FreeSixIMU::getAngles(float * angles) {
   float a[3]; //Euler
   getEuler(a);

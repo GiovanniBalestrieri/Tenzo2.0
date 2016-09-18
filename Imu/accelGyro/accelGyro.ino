@@ -82,7 +82,12 @@ void getValues(float * values) {
   accs[1] = ((float) accval[1]);
   accs[2] = ((float) accval[2]);
   
-  gyro.readGyro(&values[3]);
+  int gyroval[3];
+  gyro.readGyroRawCal(&gyroval[0],&gyroval[1],&gyroval[2]);
+  values[3] = ((float) gyroval[0]);
+  values[4] = ((float) gyroval[1]);
+  values[5] = ((float) gyroval[2]);
+  
   w[0] =  values[3];
   w[1] =  values[4];
   w[2] =  values[5];
