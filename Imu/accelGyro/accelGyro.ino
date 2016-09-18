@@ -13,7 +13,7 @@ float vals[6];
 int rawAccel[3];
 float accs[3];
 float w[3];
-float attitude[2];
+float * attitude;
 
 // comple filter gains
 float kacc = 0.03;
@@ -49,9 +49,9 @@ void loop() {
   // put your main code here, to run repeatedly:
   getValues(vals);
   getAccel(vals);
-  attitude = cf.Compute(accs,w);
+  cf.Compute(accs,w);
   serialRoutine();
-  delay(500);
+  delay(1);
 }
 
 void printAcc()
@@ -91,10 +91,16 @@ void getValues(float * values) {
 
 void printEstimates()
 {
-  Serial.print("\nAttitude:\tRoll");
-  Serial.print(vals[0]);
+  float ro =  cf.getRollAcc(accs);
+  float pi = cf.getPitchAcc(accs);
+  Serial.print("\nAccEst:\tRoll");
+  Serial.print(ro);
   Serial.print("\tPitch");
-  Serial.print(vals[1]);
+  Serial.print(pi);
+  Serial.print("\nAttitude:\tRoll");
+  Serial.print(cf.getRoll());
+  Serial.print("\tPitch");
+  Serial.print(cf.getPitch());
 }
 
 void serialRoutine()

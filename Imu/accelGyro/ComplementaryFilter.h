@@ -25,12 +25,14 @@ class ComplementaryFilter
     ComplementaryFilter(float kacc,float kgyro);
     ComplementaryFilter();
     ComplementaryFilter(float kacc,float kgyro,float kmagn);
-    float* Compute(float*,float*);
+    void Compute(float*,float*);
 
     float getXRotation(float *);
     float getYRotation(float *); 
-    float getRoll(float *);
-    float getPitch(float *);
+    float getRollAcc(float *);
+    float getPitchAcc(float *);
+    float getRoll();
+    float getPitch();
     float toDegree(float);
     double dist(float,float);
     boolean setK(float,float);

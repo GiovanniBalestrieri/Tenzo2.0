@@ -20,6 +20,8 @@ ComplementaryFilter::ComplementaryFilter(float kacc,float kgyro)
 	_kgyro = kgyro;
 	_6dof = true;
 	_9dof = false;
+  roll = 0.0;
+  pitch = 0.0;
 	cold = true;
   Serial.println("[ OK ] Complementary Filter ");
 }
@@ -33,6 +35,8 @@ ComplementaryFilter::ComplementaryFilter(float kacc,float kgyro)
 ComplementaryFilter::ComplementaryFilter()
 {
   cold = true;
+  roll = 0.0;
+  pitch = 0.0;
 }
 
 /*
@@ -49,6 +53,8 @@ ComplementaryFilter::ComplementaryFilter(float kacc,float kgyro,float kmagn)
 	_9dof = true;
 	_6dof = false;
 	cold = true;
+  roll = 0.0;
+  pitch = 0.0;
 }
 
 
@@ -59,20 +65,27 @@ ComplementaryFilter::ComplementaryFilter(float kacc,float kgyro,float kmagn)
  *	RETURNS
  *		@FLOAT Roll
  */
-float* ComplementaryFilter::Compute(float * acc,float * gyro)
-{
+void ComplementaryFilter::Compute(float * acc, float * gyro)
+{  
   if (cold)
   {
-	temp = micros();
-	cold = false;
+  	temp = micros();
+  	cold = false;
   }
   dt = micros()-temp;
 
-  angleXAcc = getRoll(acc);
-  angleYAcc = getPitch(acc);
+  angleXAcc = getRollAcc(acc);
+  angleYAcc = getPitchAcc(acc);
 
   roll = (roll + gyro[0]*(float)dt/1000000.0)*_kgyro + angleXAcc*_kacc;
   pitch = (pitch + gyro[1]*(float)dt/1000000.0)*_kgyro + angleYAcc*_kacc;
+
+  //Serial.print("\nroll:\t");
+  //Serial.print((roll + gyro[0]*(float)dt/1000000.0)*_kgyro); 
+  //Serial.print("\t Acc component:\t");
+  //Serial.println(angleXAcc*_kacc);
+  //Serial.print("\t delta:\t");
+  //Serial.println(dt);
 
   // Filter Estimates with Median Filter
   /*
@@ -85,20 +98,39 @@ float* ComplementaryFilter::Compute(float * acc,float * gyro)
   }
   */
   temp=micros();  
-  float orientation[2] = {roll,pitch};
-  return orientation;
 }
 
 /* 
- *	Computes the distance between two points_ euclidean norm
- *  	PARAM 
- *  		@FLOAT point A
- *		@FLOAT point B
- *  	RETURNS
- *		@FLOAT distance
+ *  Computes the distance between two points_ euclidean norm
+ *    PARAM 
+ *      @FLOAT point A
+ *    @FLOAT point B
+ *    RETURNS
+ *    @FLOAT distance
  */
 double ComplementaryFilter::dist(float a,float b) {
    return sqrt( (a*a)+(b*b));
+}
+
+
+/* 
+ *  Computes roll angle
+ *
+ *    RETURNS
+ *    @FLOAT Roll angle
+ */
+float ComplementaryFilter::getRoll(){
+   return roll;
+}
+
+/* 
+ *  Computes the pitch angle
+ *
+ *    RETURNS
+ *    @FLOAT Pitch angle
+ */
+float ComplementaryFilter::getPitch() {
+   return pitch;
 }
 
 
@@ -134,7 +166,7 @@ float ComplementaryFilter::getXRotation(float acc[3])
  *	RETURNS
  *		@FLOAT Roll
  */
-float ComplementaryFilter::getRoll(float acc[])
+float ComplementaryFilter::getRollAcc(float acc[])
 {
 	float roll = getXRotation(acc);
 	return roll;
@@ -149,7 +181,7 @@ float ComplementaryFilter::getRoll(float acc[])
  */
 float ComplementaryFilter::getYRotation(float acc[])
 {
-	float radians = atan2(acc[X_INDEX], (double) dist(acc[Y_INDEX],acc[Z_INDEX]));
+	float radians = atan2(-acc[X_INDEX], (double) dist(acc[Y_INDEX],acc[Z_INDEX]));
 	return toDegree(radians);
 }
 
@@ -160,7 +192,7 @@ float ComplementaryFilter::getYRotation(float acc[])
  *	RETURNS
  *		@FLOAT Roll
  */
-float ComplementaryFilter::getPitch(float acc[])
+float ComplementaryFilter::getPitchAcc(float acc[])
 {
 	float pitch = getYRotation(acc);
 	return pitch;
