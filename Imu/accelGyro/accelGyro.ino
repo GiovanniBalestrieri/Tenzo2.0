@@ -11,7 +11,8 @@ ComplementaryFilter cf;
 
 float vals[6];
 int rawAccel[3];
-float gyro[3];
+float accs[3];
+float w[3];
 float attitude[2];
 
 // comple filter gains
@@ -48,7 +49,7 @@ void loop() {
   // put your main code here, to run repeatedly:
   getValues(vals);
   getAccel(vals);
-  attitude = cf.compute(rawAccel,gyro);
+  attitude = cf.Compute(accs,w);
   serialRoutine();
   delay(500);
 }
@@ -77,11 +78,23 @@ void getValues(float * values) {
   values[1] = ((float) accval[1]);
   values[2] = ((float) accval[2]);
   
+  accs[0] = ((float) accval[0]);
+  accs[1] = ((float) accval[1]);
+  accs[2] = ((float) accval[2]);
+  
   gyro.readGyro(&values[3]);
-  gyro[0] =  values[3];
-  gyro[1] =  values[4];
-  gyro[2] =  values[5];
+  w[0] =  values[3];
+  w[1] =  values[4];
+  w[2] =  values[5];
   //magn.getValues(&values[6]);
+}
+
+void printEstimates()
+{
+  Serial.print("\nAttitude:\tRoll");
+  Serial.print(vals[0]);
+  Serial.print("\tPitch");
+  Serial.print(vals[1]);
 }
 
 void serialRoutine()
@@ -149,6 +162,11 @@ void serialRoutine()
       offsetAcc[1] = offsetY;
       offsetAcc[2] = offsetZ;
     }
+    if (t == 'a')
+      printAcc();
+      
+    if (t == 'o')
+      printEstimates();
     
     if (t == 'p')
     {
@@ -173,6 +191,7 @@ void serialRoutine()
       }
     }
   }
+  
 }
 
 void getAccel(float * values) 
@@ -193,7 +212,5 @@ void getAccel(float * values)
   {
     values[i] = (rawAccel[i]- offsetAcc[i])*gains[i] ;
   }
-  Serial.println("Adjusted");
-  accRoutine();
   //magn.getValues(&values[6]);
 }
