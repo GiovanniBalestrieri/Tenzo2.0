@@ -2,14 +2,21 @@
 
 #include <FIMU_ADXL345.h>
 #include <FIMU_ITG3200.h>
+#include "ComplementaryFilter.h"
 #include <Wire.h>
 
 ADXL345 acc;
 ITG3200 gyro;
+ComplementaryFilter cf;
 
 float vals[6];
 int rawAccel[3];
+float gyro[3];
+float attitude[2];
 
+// comple filter gains
+float kacc = 0.03;
+float kgyro = 0.97;
 
 float offsetAcc[3] = {0.4666,-0.1594, -0.7343};
 int xMax=-246,xMin=273,yMax=-275,yMin=254,zMax=-300,zMin=208;
@@ -22,6 +29,7 @@ void setup() {
   Wire.begin();
   acc = ADXL345();
   gyro = ITG3200();
+  cf = ComplementaryFilter(kacc,kgyro);
   
   // init ADXL345
   acc.init(0x53);  
@@ -40,11 +48,12 @@ void loop() {
   // put your main code here, to run repeatedly:
   getValues(vals);
   getAccel(vals);
+  attitude = cf.compute(rawAccel,gyro);
   serialRoutine();
   delay(500);
 }
 
-void accRoutine()
+void printAcc()
 {
   Serial.print("\nAcc:\t");
   Serial.print(vals[0]);
@@ -59,7 +68,6 @@ void accRoutine()
   Serial.print(vals[4]);
   Serial.print("\t");
   Serial.println(vals[5]);
-
 }
 
 void getValues(float * values) {  
@@ -70,7 +78,9 @@ void getValues(float * values) {
   values[2] = ((float) accval[2]);
   
   gyro.readGyro(&values[3]);
-  
+  gyro[0] =  values[3];
+  gyro[1] =  values[4];
+  gyro[2] =  values[5];
   //magn.getValues(&values[6]);
 }
 
@@ -142,7 +152,8 @@ void serialRoutine()
     
     if (t == 'p')
     {
-      Serial.println("\t\tPriting offsets:");
+      Serial.println("\t\tPrinting offsets:");
+      
       Serial.print("[ Max\tMin]\nX:");
       Serial.print(xMax);
       Serial.print("\t");
@@ -155,6 +166,7 @@ void serialRoutine()
       Serial.print(zMax);
       Serial.print("\t");
       Serial.println(zMin);
+      
       for (int o =0;o<3;o++)
       { 
         Serial.println(offsetAcc[o]);
