@@ -25,7 +25,7 @@ class ComplementaryFilter
     ComplementaryFilter(float kacc,float kgyro);
     ComplementaryFilter();
     ComplementaryFilter(float kacc,float kgyro,float kmagn);
-    void Compute(float*,float*);
+    void Compute(float*,float*, unsigned long);
 
     float getXRotation(float *);
     float getYRotation(float *); 

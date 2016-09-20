@@ -304,10 +304,6 @@ void FreeSixIMU::getAngles(float * angles) {
 
 }
 
-
-
-
-
 void FreeSixIMU::getYawPitchRoll(float * ypr) {
   float q[4]; // quaternion
   float gx, gy, gz; // estimated gravity direction
@@ -321,7 +317,6 @@ void FreeSixIMU::getYawPitchRoll(float * ypr) {
   ypr[1] = atan(gx / sqrt(gy*gy + gz*gz))  * 180/M_PI;
   ypr[2] = atan(gy / sqrt(gx*gx + gz*gz))  * 180/M_PI;
 }
-
 
 float invSqrt(float number) {
   volatile long i;

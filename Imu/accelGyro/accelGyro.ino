@@ -1,5 +1,4 @@
 
-
 #include <FIMU_ADXL345.h>
 #include <FIMU_ITG3200.h>
 #include "ComplementaryFilter.h"
@@ -14,6 +13,8 @@ int rawAccel[3];
 float accs[3];
 float w[3];
 float * attitude;
+
+unsigned long gyroRead=0;
 
 // comple filter gains
 float kacc = 0.03;
@@ -49,9 +50,8 @@ void loop() {
   // put your main code here, to run repeatedly:
   getValues(vals);
   getAccel(vals);
-  cf.Compute(accs,w);
+  cf.Compute(accs,w,gyroRead);
   serialRoutine();
-  delay(1);
 }
 
 void printAcc()
@@ -83,10 +83,12 @@ void getValues(float * values) {
   accs[2] = ((float) accval[2]);
   
   int gyroval[3];
+  gyroRead = micros();
+  
   gyro.readGyroRawCal(&gyroval[0],&gyroval[1],&gyroval[2]);
-  values[3] = ((float) gyroval[0]);
-  values[4] = ((float) gyroval[1]);
-  values[5] = ((float) gyroval[2]);
+  values[3] = (float) gyroval[0] / 14.375;
+  values[4] = (float) gyroval[1] / 14.375;
+  values[5] = (float) gyroval[2] / 14.375;
   
   w[0] =  values[3];
   w[1] =  values[4];
@@ -201,8 +203,7 @@ void serialRoutine()
         Serial.println(offsetAcc[o]);
       }
     }
-  }
-  
+  }  
 }
 
 void getAccel(float * values) 

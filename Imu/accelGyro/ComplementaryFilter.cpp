@@ -65,18 +65,20 @@ ComplementaryFilter::ComplementaryFilter(float kacc,float kgyro,float kmagn)
  *	RETURNS
  *		@FLOAT Roll
  */
-void ComplementaryFilter::Compute(float * acc, float * gyro)
+void ComplementaryFilter::Compute(float * acc, float * gyro, unsigned long gyroRead)
 {  
+  /*
   if (cold)
   {
-  	temp = micros();
+  	gyroRead = micros();
   	cold = false;
   }
-  dt = micros()-temp;
+  */
 
   angleXAcc = getRollAcc(acc);
   angleYAcc = getPitchAcc(acc);
 
+  dt = micros()-gyroRead;
   roll = (roll + gyro[0]*(float)dt/1000000.0)*_kgyro + angleXAcc*_kacc;
   pitch = (pitch + gyro[1]*(float)dt/1000000.0)*_kgyro + angleYAcc*_kacc;
 
@@ -97,7 +99,6 @@ void ComplementaryFilter::Compute(float * acc, float * gyro)
     estYAngle = medianEstY.out();
   }
   */
-  temp=micros();  
 }
 
 /* 
